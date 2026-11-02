@@ -3,7 +3,7 @@ name: microservices-deployment
 services:
   postgresdb:
     image: postgres:16-alpine
-    container_name: postgresdb
+    container_name: postgresdb #same as the service name
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -13,6 +13,8 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      #postgres will be executed only if all the healthchecks are passed if it fails itll wait for 5s before retrying
+      #heath check is optional
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d projectdb"]
       interval: 5s
@@ -23,7 +25,9 @@ services:
       - microservices-network
 
   eureka-server:
-    image: suryakiran1993/eureka-server:latest
+    image: harshinig06/eureka-server:latest
+    #to build the image we need to have code(context) and dockerfile
+    #docker-compose comfig is used to chack whether there are any erros in the code or not
     build:
       context: ./EurekaServer
       dockerfile: Dockerfile
@@ -35,7 +39,7 @@ services:
       - microservices-network
 
   api-gateway:
-    image: suryakiran1993/api-gateway:latest
+    image: harshinig06/api-gateway:latest
     build:
       context: ./APIGateway
       dockerfile: Dockerfile
@@ -52,7 +56,7 @@ services:
       - microservices-network
 
   user-service:
-    image: suryakiran1993/user-service:latest
+    image: harshinig06/user-service:latest
     build:
       context: ./UserService
       dockerfile: Dockerfile
@@ -69,7 +73,7 @@ services:
       - microservices-network
 
   product-service:
-    image: suryakiran1993/product-service:latest
+    image: harshinig06/product-service:latest
     build:
       context: ./ProductService
       dockerfile: Dockerfile
@@ -86,7 +90,7 @@ services:
       - microservices-network
 
   order-service:
-    image: suryakiran1993/order-service:latest
+    image: harshinig06/order-service:latest
     build:
       context: ./OrderService
       dockerfile: Dockerfile
