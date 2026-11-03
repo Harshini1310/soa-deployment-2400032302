@@ -3,7 +3,7 @@ name: microservices-deployment
 services:
   postgresdb:
     image: postgres:16-alpine
-    container_name: postgresdb #same as the service name
+    container_name: postgresdb
     restart: unless-stopped
     environment:
       POSTGRES_USER: postgres
@@ -13,8 +13,6 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
-      #postgres will be executed only if all the healthchecks are passed if it fails itll wait for 5s before retrying
-      #heath check is optional
     healthcheck:
       test: ["CMD-SHELL", "pg_isready -U postgres -d projectdb"]
       interval: 5s
@@ -26,8 +24,6 @@ services:
 
   eureka-server:
     image: harshinig06/eureka-server:latest
-    #to build the image we need to have code(context) and dockerfile
-    #docker-compose comfig is used to chack whether there are any erros in the code or not
     build:
       context: ./EurekaServer
       dockerfile: Dockerfile
@@ -46,6 +42,8 @@ services:
     container_name: api-gateway
     ports:
       - "9000:8000"
+    environment:
+      EUREKA_INSTANCE_STATUSPAGEURL: http://localhost:9000/actuator/info
     depends_on:
       - eureka-server
       - user-service
@@ -63,6 +61,8 @@ services:
     container_name: user-service
     ports:
       - "9001:8001"
+    environment:
+      EUREKA_INSTANCE_STATUSPAGEURL: http://localhost:9001/actuator/info
     depends_on:
       eureka-server:
         condition: service_started
@@ -80,6 +80,8 @@ services:
     container_name: product-service
     ports:
       - "9002:8002"
+    environment:
+      EUREKA_INSTANCE_STATUSPAGEURL: http://localhost:9002/actuator/info
     depends_on:
       eureka-server:
         condition: service_started
@@ -97,6 +99,8 @@ services:
     container_name: order-service
     ports:
       - "9003:8003"
+    environment:
+      EUREKA_INSTANCE_STATUSPAGEURL: http://localhost:9003/actuator/info
     depends_on:
       eureka-server:
         condition: service_started
